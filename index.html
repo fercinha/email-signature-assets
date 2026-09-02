@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fichero de firmas — Estudio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F7F5F0;
+    --paper-card: #FFFFFF;
+    --ink: #1C2333;
+    --muted: #6B6558;
+    --rule: #C9C2B3;
+    --stamp: #C9432E;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header{
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 64px 24px 32px;
+  }
+
+  .kicker{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  h1{
+    font-size: 40px;
+    font-weight: 600;
+    margin: 8px 0 12px;
+    line-height: 1.15;
+  }
+
+  header p{
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 56ch;
+    line-height: 1.55;
+    margin: 0 0 28px;
+  }
+
+  .search-row{
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+  }
+
+  .search-row span{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--stamp);
+  }
+
+  #buscar{
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    color: var(--ink);
+    padding: 4px 0;
+  }
+
+  #buscar::placeholder{ color: var(--rule); }
+
+  main{
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 8px 24px 80px;
+  }
+
+  .entry{
+    border-top: 1px solid var(--rule);
+    padding: 26px 0;
+  }
+
+  .entry:last-child{ border-bottom: 1px solid var(--rule); }
+
+  .entry-head{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    cursor: pointer;
+  }
+
+  .entry-id{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--rule);
+    width: 34px;
+    padding-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .entry-title{ flex: 1; }
+
+  .entry-title .nombre{
+    font-size: 21px;
+    font-weight: 600;
+  }
+
+  .entry-title .cargo{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .toggle{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    padding-top: 5px;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .entry-body{
+    display: none;
+    margin-top: 20px;
+    padding-left: 34px;
+  }
+
+  .entry.abierto .entry-body{ display: block; }
+  .entry.abierto .toggle::before{ content: "cerrar"; }
+  .entry:not(.abierto) .toggle::before{ content: "ver"; }
+
+  .preview{
+    background: var(--paper-card);
+    border: 1px solid var(--rule);
+    padding: 20px;
+    overflow: auto;
+  }
+
+  .preview iframe{
+    width: 100%;
+    height: 120px;
+    border: none;
+  }
+
+  .acciones{
+    display: flex;
+    gap: 16px;
+    margin-top: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+
+  .acciones button, .acciones a{
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--ink);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0 0 2px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .acciones button:hover, .acciones a:hover{
+    color: var(--stamp);
+    border-color: var(--stamp);
+  }
+
+  .acciones .copiado{
+    border-color: var(--stamp);
+    color: var(--stamp);
+  }
+
+  .codigo{
+    display: none;
+    margin-top: 16px;
+  }
+
+  .codigo.abierto{ display: block; }
+
+  .codigo pre{
+    background: var(--ink);
+    color: #E8E4D9;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 16px;
+    margin: 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .vacio{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 40px 0;
+    display: none;
+  }
+
+  footer{
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--rule);
+  }
+
+  @media (max-width: 560px){
+    h1{ font-size: 30px; }
+    .entry-id{ display: none; }
+    .entry-body{ padding-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">estudio / firmas de correo</div>
+  <h1>Fichero de firmas</h1>
+  <p>Cada entrada es una firma HTML lista para pegar en Gmail o Outlook. Ábrela para ver la vista previa, copiar el código o descargar el archivo.</p>
+  <div class="search-row">
+    <span>#</span>
+    <input type="text" id="buscar" placeholder="Buscar por nombre o cargo…" autocomplete="off">
+  </div>
+</header>
+
+<main id="lista"></main>
+<p class="vacio" id="vacio">Sin resultados para esa búsqueda.</p>
+
+<footer>actualizado manualmente · signatures/*.html</footer>
+
+<script>
+  // Cada firma vive como archivo .html independiente en /signatures.
+  // Para añadir una nueva: crea el archivo y agrega una línea aquí.
+  const firmas = [
+    { archivo: "signatures/ana-martinez.html", nombre: "Ana Martínez", cargo: "Diseñadora Senior" },
+    { archivo: "signatures/carlos-rios.html",   nombre: "Carlos Ríos",   cargo: "Director de Arte" }
+  ];
+
+  const lista = document.getElementById('lista');
+  const vacio = document.getElementById('vacio');
+
+  firmas.forEach((firma, i) => {
+    const entry = document.createElement('div');
+    entry.className = 'entry';
+    entry.dataset.nombre = (firma.nombre + ' ' + firma.cargo).toLowerCase();
+
+    entry.innerHTML = `
+      <div class="entry-head">
+        <div class="entry-id">${String(i + 1).padStart(2, '0')}</div>
+        <div class="entry-title">
+          <div class="nombre">${firma.nombre}</div>
+          <div class="cargo">${firma.cargo}</div>
+        </div>
+        <div class="toggle"></div>
+      </div>
+      <div class="entry-body">
+        <div class="preview"><iframe title="Vista previa de la firma de ${firma.nombre}"></iframe></div>
+        <div class="acciones">
+          <button class="btn-copiar">copiar html</button>
+          <a href="${firma.archivo}" target="_blank" rel="noopener">abrir archivo</a>
+          <a href="${firma.archivo}" download>descargar</a>
+          <button class="btn-codigo">ver código</button>
+        </div>
+        <div class="codigo"><pre></pre></div>
+      </div>
+    `;
+
+    const head = entry.querySelector('.entry-head');
+    const iframe = entry.querySelector('iframe');
+    const pre = entry.querySelector('pre');
+    const btnCopiar = entry.querySelector('.btn-copiar');
+    const btnCodigo = entry.querySelector('.btn-codigo');
+    const bloqueCodigo = entry.querySelector('.codigo');
+
+    let html = null;
+    let cargado = false;
+
+    function cargarHtml(){
+      if (cargado) return Promise.resolve(html);
+      return fetch(firma.archivo)
+        .then(r => r.text())
+        .then(texto => {
+          html = texto;
+          cargado = true;
+          iframe.srcdoc = texto;
+          pre.textContent = texto;
+          return texto;
+        })
+        .catch(() => {
+          html = '<!-- No se pudo cargar ' + firma.archivo + ' -->';
+          pre.textContent = html;
+        });
+    }
+
+    head.addEventListener('click', () => {
+      const abierto = entry.classList.toggle('abierto');
+      if (abierto) cargarHtml();
+    });
+
+    btnCodigo.addEventListener('click', (e) => {
+      e.stopPropagation();
+      bloqueCodigo.classList.toggle('abierto');
+      btnCodigo.textContent = bloqueCodigo.classList.contains('abierto') ? 'ocultar código' : 'ver código';
+    });
+
+    btnCopiar.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await cargarHtml();
+      try {
+        await navigator.clipboard.writeText(html);
+        btnCopiar.textContent = 'copiado ✓';
+        btnCopiar.classList.add('copiado');
+        setTimeout(() => {
+          btnCopiar.textContent = 'copiar html';
+          btnCopiar.classList.remove('copiado');
+        }, 1600);
+      } catch (err) {
+        btnCopiar.textContent = 'error al copiar';
+      }
+    });
+
+    lista.appendChild(entry);
+  });
+
+  document.getElementById('buscar').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    let visibles = 0;
+    document.querySelectorAll('.entry').forEach(entry => {
+      const coincide = entry.dataset.nombre.includes(q);
+      entry.style.display = coincide ? '' : 'none';
+      if (coincide) visibles++;
+    });
+    vacio.style.display = visibles === 0 ? 'block' : 'none';
+  });
+</script>
+
+</body>
+</html>
